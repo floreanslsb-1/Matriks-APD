@@ -1,0 +1,2232 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matriks APD</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:         #f0f2f5;
+      --bg2:        #ffffff;
+      --bg3:        #e8eaed;
+      --card:       #ffffff;
+      --border:     #d1d5db;
+      --red:        #c0392b;
+      --red-dark:   #96281b;
+      --red-glow:   rgba(192,57,43,0.15);
+      --red-subtle: rgba(192,57,43,0.08);
+      --text:       #1f2937;
+      --text-muted: #6b7280;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── HEADER ── */
+    .header { background: var(--bg2); padding: 1.2rem 1.2rem 1rem; border-bottom: 1px solid var(--border); }
+    .header-inner {
+      background: linear-gradient(135deg, #2d3748 0%, #3d4a5c 100%);
+      border-radius: 1.5rem; padding: 1.2rem 1.5rem;
+      display: flex; align-items: center; gap: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      max-width: 900px; margin: 0 auto; position: relative; overflow: hidden;
+    }
+    .header-inner::before {
+      content: ''; position: absolute; top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(192,57,43,0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-badge {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(192,57,43,0.4);
+    }
+    .header-text { flex: 1; }
+    .header-text h2 { font-size: 1.3rem; font-weight: 700; color: #fff; margin: 0 0 2px; }
+    .header-text p  { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin: 0; }
+    .header-pill {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 2rem; padding: 4px 12px; font-size: 0.65rem;
+      color: rgba(255,255,255,0.6); font-weight: 600; letter-spacing: 0.5px;
+      text-transform: uppercase; flex-shrink: 0;
+    }
+
+    /* ── NAV TABS ── */
+    .nav-tabs-custom {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      display: flex; padding: 0 1.2rem;
+    }
+    .nav-tab {
+      padding: 0.75rem 1.2rem; font-size: 0.82rem; font-weight: 600;
+      color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent;
+      transition: 0.2s; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 1rem 1.2rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;
+    }
+    .dark-input {
+      background: var(--bg3); border: 1px solid var(--border); border-radius: 0.7rem;
+      color: var(--text); font-family: 'Poppins', sans-serif; font-size: 0.82rem;
+      padding: 0.6rem 0.9rem; outline: none; transition: 0.2s;
+    }
+    .dark-input:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-glow); }
+    .dark-input::placeholder { color: var(--text-muted); }
+    .search-risk { flex: 1; min-width: 160px; padding-left: 2.4rem; width: 100%; }
+    .search-risk-wrap { position: relative; flex: 1; min-width: 280px; }
+    .search-risk-wrap .icon {
+      position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
+      font-size: 0.85rem; color: var(--text-muted); pointer-events: none;
+    }
+
+    /* ── SECTION DROPDOWN ── */
+    .section-wrap { position: relative; min-width: 200px; max-width: 280px; flex: none; }
+    .section-selected { cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .section-selected .arrow { font-size: 0.7rem; color: var(--text-muted); transition: 0.2s; }
+    .section-selected.open .arrow { transform: rotate(180deg); }
+    .section-dropdown {
+      display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: var(--bg3); border: 1px solid var(--border); border-radius: 0.7rem;
+      z-index: 100; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    .section-dropdown.open { display: block; }
+    .section-search { padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); }
+    .section-search input {
+      width: 100%; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 0.5rem; color: var(--text); font-family: 'Poppins', sans-serif;
+      font-size: 0.78rem; padding: 0.4rem 0.7rem; outline: none;
+    }
+    .section-search input:focus { border-color: var(--red); }
+    .section-list { max-height: 220px; overflow-y: auto; scrollbar-width: thin; }
+    .section-item {
+      padding: 0.55rem 0.9rem; font-size: 0.8rem; cursor: pointer; transition: 0.15s;
+      color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;
+    }
+    .section-item:hover { background: var(--bg2); color: var(--text); }
+    .section-item.active { color: var(--red); font-weight: 600; }
+    .section-item .count {
+      margin-left: auto; font-size: 0.68rem; background: var(--bg2);
+      padding: 1px 7px; border-radius: 2rem; color: var(--text-muted);
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      padding: 0.6rem 1.2rem; font-size: 0.75rem; color: var(--text-muted);
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .stats-bar .chip {
+      background: var(--red-subtle); color: var(--red);
+      padding: 2px 10px; border-radius: 2rem; font-size: 0.72rem; font-weight: 600;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-header { padding: 1.2rem 1.2rem 0.5rem; display: flex; align-items: center; gap: 0.75rem; }
+    .section-header h5 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 0; }
+    .section-header .line { flex: 1; height: 1px; background: var(--border); }
+    .section-header .sec-count {
+      font-size: 0.72rem; color: var(--text-muted); background: var(--bg3);
+      padding: 2px 10px; border-radius: 2rem; border: 1px solid var(--border);
+    }
+
+    /* ── CARDS GRID ── */
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 1rem; padding: 0.5rem 1.2rem 2rem;
+    }
+    .risk-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 1rem; padding: 1rem; transition: 0.25s; position: relative; overflow: hidden;
+    }
+    .risk-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--red), transparent); opacity: 0; transition: 0.25s;
+    }
+    .risk-card:hover { border-color: rgba(192,57,43,0.3); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+    .risk-card:hover::before { opacity: 1; }
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+    .badge-no { background: var(--red-subtle); color: var(--red); font-size: 0.68rem; font-weight: 700; padding: 3px 10px; border-radius: 2rem; border: 1px solid rgba(192,57,43,0.2); }
+    .badge-id { font-size: 0.65rem; color: var(--text-muted); font-weight: 500; }
+    .risk-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 3px; }
+    .risk-title { font-size: 0.85rem; font-weight: 600; color: var(--text); line-height: 1.45; margin-bottom: 0.85rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+
+    /* ── APD GROUPS (category grouping) ── */
+    .apd-groups {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+
+    /* Each category group = one grey rounded box */
+    .apd-cat-group {
+      display: contents; /* dissolves the wrapper, chips fall into parent grid */
+      cursor: pointer;
+    }
+    .apd-cat-group:hover {
+      border-color: rgba(192,57,43,0.4);
+      background: rgba(192,57,43,0.05);
+    }
+
+    /* ── APD CHIPS (inside group) ── */
+    .apd-chip {
+      background: var(--bg3);
+      border: 1px solid var(--border);  /* change from none to this */
+      border-radius: 0.8rem;
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      transition: 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .apd-chip:hover {
+      border-color: rgba(192,57,43,0.4);
+      background: rgba(192,57,43,0.08);
+      cursor: pointer;
+    }
+    .apd-chip img {
+      width: 56px; height: 56px; object-fit: contain;
+      display: block; margin: 0 auto 5px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+    .apd-chip .chip-nama {
+      font-size: 0.65rem; font-weight: 600; color: var(--text);
+      line-height: 1.3; margin-bottom: 3px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .apd-chip .chip-kat {
+      font-size: 0.55rem; font-weight: 700; color: var(--red);
+      text-transform: uppercase; background: var(--red-subtle);
+      padding: 2px 5px; border-radius: 3px; display: inline-block;
+    }
+
+    .img-ph { width: 56px; height: 56px; background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; font-size: 1.1rem; color: var(--text-muted); }
+    .img-ph.no-img { background: var(--bg2); animation: none; opacity: 0.5; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      z-index: 1000; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: var(--card); border: 1px solid var(--border); border-radius: 1.2rem;
+      padding: 1.8rem 1.8rem 0.6rem; width: 92%; text-align: center;
+      position: relative; animation: popIn 0.2s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-height: 90vh; overflow-y: auto;
+    }
+    /* Dynamic max-width based on number of PPEs shown */
+    .modal-box.ppe-count-1 { max-width: 480px; }
+    .modal-box.ppe-count-2 { max-width: 760px; }
+    .modal-box.ppe-count-3 { max-width: 760px; }
+    .modal-box.ppe-count-4 { max-width: 760px; }
+
+    @keyframes popIn { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+
+    /* ── MULTI PPE LAYOUT ── */
+    .modal-ppe-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem;
+      margin-bottom: 1.2rem;
+    }
+
+    /* Remove the old flex column divider */
+    .modal-ppe-col + .modal-ppe-col {
+      border-left: none;
+    }
+
+    .modal-ppe-col {
+      flex: 1;
+      min-width: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .modal-box.ppe-count-1 .modal-ppe-row {
+      grid-template-columns: 1fr;
+      max-width: 480px;
+      margin: 0 auto 1.2rem;
+    }
+
+    .modal-box.ppe-count-2 .modal-ppe-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-box.ppe-count-3 .modal-ppe-row,
+    .modal-box.ppe-count-4 .modal-ppe-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-cat-header {
+      text-align: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-cat-title {
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--red);
+      background: var(--red-subtle); padding: 3px 10px;
+      border-radius: 2rem; display: inline-block; margin-bottom: 0.4rem;
+    }
+
+    .modal-img-wrap { width: 140px; height: 140px; margin: 0 auto 0.75rem; position: relative; }
+    .modal-img-wrap img {
+      width: 140px; height: 140px; object-fit: contain;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+      transition: opacity 0.3s ease;
+    }
+    .modal-img-ph {
+      width: 140px; height: 140px; background: var(--bg3); border-radius: 1rem;
+      display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
+    }
+    .modal-box h6  { font-weight: 700; color: var(--text); font-size: 0.95rem; margin-bottom: 1rem; }
+    .modal-box .modal-kat { font-size: 0.75rem; color: var(--red); font-weight: 600; margin-bottom: 1rem; }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem; background: var(--bg3);
+      border: 1px solid var(--border); border-radius: 50%; width: 28px; height: 28px;
+      font-size: 0.8rem; cursor: pointer; color: var(--text-muted);
+      line-height: 28px; text-align: center; transition: 0.2s; z-index: 10;
+    }
+    .modal-close:hover { background: var(--red); color: white; border-color: var(--red); }
+
+    /* ── MODAL INFO BLOCK ── */
+    .modal-info {
+      display: flex; flex-direction: column;
+      border: 1px solid var(--border); border-radius: 0.8rem;
+      overflow: hidden; text-align: left; margin-top: 0.5rem;
+    }
+    .modal-info-row {
+      display: flex; align-items: center; padding: 0.7rem 1rem; gap: 0.75rem;
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+    }
+    .modal-info-row:last-child { border-bottom: none; }
+    .modal-info-row.col-layout { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .modal-info-icon {
+      width: 30px; height: 30px; flex-shrink: 0; background: var(--bg3);
+      border: 1px solid var(--border); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-info-icon svg { width: 15px; height: 15px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .modal-info-label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--text-muted); min-width: 55px;
+    }
+    .modal-info-value { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-left: auto; text-align: right; }
+    .modal-info-value.empty { color: var(--text-muted); font-style: italic; font-size: 0.72rem; font-weight: 400; }
+
+    /* ── PILLS (type & size) ── */
+    .pills-row { display: flex; flex-wrap: wrap; gap: 0.35rem; width: 100%; }
+    .pill {
+      padding: 4px 12px; border-radius: 2rem; font-size: 0.75rem; font-weight: 600;
+      border: 1px solid var(--border); cursor: pointer; transition: 0.2s;
+      background: var(--bg3); color: var(--text-muted);
+    }
+    .pill:hover { border-color: var(--text); color: var(--text); }
+    .pill.active { background: var(--text); border-color: var(--text); color: var(--bg2); }
+
+    /* ── MID RESULT ROW ── */
+    .mid-result {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 0.5rem; padding: 0.4rem 0.65rem; gap: 0.5rem; width: 100%;
+    }
+    .mid-result-val { font-family: monospace; font-size: 0.92rem; font-weight: 700; color: var(--text); }
+    .mid-copy-btn {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+      cursor: pointer; padding: 4px 6px; display: flex; align-items: center;
+      justify-content: center; transition: 0.2s; flex-shrink: 0;
+    }
+    .mid-copy-btn:hover { background: var(--text); border-color: var(--text); }
+    .mid-copy-btn:hover svg { stroke: white; }
+    .mid-copy-btn svg { width: 14px; height: 14px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: 0.2s; }
+
+    /* ── TOAST ── */
+    .mid-toast {
+      position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%) translateY(10px);
+      background: #1f2937; color: #fff; padding: 0.5rem 1.1rem; border-radius: 2rem;
+      font-size: 0.75rem; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 9999; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .mid-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── LOADING / EMPTY ── */
+    .loading-wrap { text-align: center; padding: 4rem 1rem; color: var(--text-muted); }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top: 3px solid var(--red); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── LIST VIEW ── */
+    .list-view .cards-grid { display: flex; flex-direction: column; gap: 0; padding: 0 1.2rem 2rem; }
+    .list-view .risk-card { border-radius: 0; border-left: none; border-right: none; border-top: none; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 1rem; transform: none !important; box-shadow: none !important; }
+    .list-view .risk-card:first-child { border-top: 1px solid var(--border); border-radius: 0.8rem 0.8rem 0 0; }
+    .list-view .risk-card:last-child { border-radius: 0 0 0.8rem 0.8rem; }
+    .list-view .risk-card::before { display: none; }
+    .list-view .risk-card:hover { background: var(--red-subtle); }
+    .list-view .list-meta { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 60px; }
+    .list-view .card-top { display: none; }
+    .list-view .risk-label { display: none; }
+    .list-view .risk-title { font-size: 0.82rem; font-weight: 600; border-bottom: none; margin: 0; padding: 0; flex: 1; min-width: 140px; }
+    .list-view .apd-groups { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; flex: 2; }
+    .list-view .apd-groups::-webkit-scrollbar { display: none; }
+    .list-view .apd-cat-group { flex-wrap: nowrap; }
+    .list-view .apd-chip { width: 80px; padding: 0.35rem 0.3rem; }
+    .list-view .apd-chip img,
+    .list-view .apd-chip .img-ph { width: 36px; height: 36px; }
+    .list-view .modal-img-wrap,
+    .list-view .modal-img-wrap img { width: 36px; height: 36px; }
+
+    /* ── COMPARE ── */
+    .risk-card.selectable { cursor: pointer; }
+    .risk-card.selected { border-color: var(--red); box-shadow: 0 0 0 2px var(--red-glow); }
+    .risk-card.selected::before { opacity: 1; }
+    .compare-icon { display: none; position: absolute; bottom: 0.6rem; right: 0.6rem; width: 26px; height: 26px; border-radius: 50%; border: 2px dashed var(--border); background: var(--bg3); color: var(--text-muted); font-size: 0.85rem; font-weight: 700; align-items: center; justify-content: center; transition: 0.2s; pointer-events: none; }
+    .selectable .compare-icon { display: flex; }
+    .selected .compare-icon { border: 2px solid var(--red); background: var(--red); color: white; }
+    .fab-compare { position: fixed; bottom: 1.5rem; right: 1.5rem; background: linear-gradient(135deg, var(--red), var(--red-dark)); color: white; border: none; border-radius: 2rem; padding: 0.85rem 1.4rem; font-family: 'Poppins', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 20px rgba(192,57,43,0.4); display: flex; align-items: center; gap: 0.5rem; z-index: 500; transition: 0.2s; }
+    .fab-compare:hover { transform: translateY(-2px); }
+    .fab-compare .fab-count { background: white; color: var(--red); border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .fab-compare.active-mode { background: linear-gradient(135deg, #2d3748, #3d4a5c); }
+    .compare-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 600; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 1.5rem; }
+    .compare-overlay.show { display: flex; }
+    .compare-panel { background: var(--bg2); border-radius: 1.5rem; width: 100%; max-width: 900px; max-height: calc(100vh - 3rem); overflow: hidden; padding: 1.5rem 1.5rem 0; animation: popIn 0.25s ease; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+    .compare-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); position: relative; }
+    .compare-panel-header h4 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 0; position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+    .compare-panel-header .header-left { visibility: hidden; }
+    .compare-close { background: var(--bg3); border: 1px solid var(--border); border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .compare-close:hover { background: var(--red); color: white; border-color: var(--red); }
+    .selected-risks { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+    .selected-risk-tag { background: var(--red-subtle); border: 1px solid rgba(192,57,43,0.2); color: var(--red); border-radius: 2rem; padding: 4px 12px; font-size: 0.72rem; font-weight: 600; }
+    .compare-category { margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 1rem; overflow: hidden; }
+    .compare-cat-header { background: linear-gradient(135deg, #2d3748 0%, #3d4a5c 100%); padding: 0.75rem 1rem; font-size: 0.8rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; }
+    .compare-cat-header .cat-count { font-size: 0.65rem; color: rgba(255,255,255,0.6); font-weight: 400; margin-left: auto; }
+    .compare-cat-conflict { background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%); }
+    .compare-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+    .compare-option { padding: 0.85rem 1rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; position: relative; }
+    .compare-option:hover { background: var(--red-subtle); }
+    .compare-option.user-selected { background: var(--red-subtle); border-left: 3px solid var(--red); }
+    .compare-option .opt-img { width: 48px; height: 48px; object-fit: contain; display: block; margin-bottom: 6px; }
+    .compare-option .opt-img-ph { width: 48px; height: 48px; background: var(--bg3); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 6px; }
+    .compare-option .opt-risk { font-size: 0.6rem; color: var(--text-muted); margin-bottom: 3px; }
+    .compare-option .opt-name { font-size: 0.75rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .compare-option .opt-check { position: absolute; top: 0.6rem; right: 0.6rem; width: 18px; height: 18px; border-radius: 50%; background: var(--red); color: white; font-size: 0.6rem; display: none; align-items: center; justify-content: center; }
+    .compare-option.user-selected .opt-check { display: flex; }
+    .compare-single { padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; }
+    .compare-single .opt-img { width: 40px; height: 40px; object-fit: contain; }
+    .compare-single .opt-img-ph { width: 40px; height: 40px; background: var(--bg3); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+    .compare-single .single-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .compare-single .single-risks { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+    .compare-summary { margin-top: 1rem; padding: 1rem; background: var(--bg3); border-radius: 0.8rem; border: 1px solid var(--border); }
+    .compare-summary h6 { font-size: 0.8rem; font-weight: 700; color: var(--text); margin: 0 0 0.6rem; }
+    .summary-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .summary-chip { background: var(--bg2); border: 1px solid var(--border); border-radius: 0.7rem; padding: 0.5rem 0.75rem; font-size: 0.72rem; color: var(--text); display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: 0.2s; }
+    .summary-chip:hover { border-color: var(--red); background: var(--red-subtle); }
+    .summary-chip img { width: 32px; height: 32px; object-fit: contain; }
+    .summary-chip .chip-img-ph { width: 32px; height: 32px; background: var(--bg3); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+    .summary-chip .chip-info { display: flex; flex-direction: column; }
+    .summary-chip .chip-cat { font-size: 0.6rem; color: var(--red); font-weight: 700; text-transform: uppercase; }
+    .summary-chip .chip-name { font-size: 0.72rem; font-weight: 600; color: var(--text); }
+    .consult-note { padding: 0.6rem 1rem; font-size: 0.72rem; color: var(--red); background: var(--red-subtle); border-top: 1px solid rgba(192,57,43,0.15); font-weight: 500; }
+    .compare-actions { background: var(--bg2); border-top: 1px solid var(--border); padding: 1rem 0; display: flex; gap: 0.75rem; align-items: center; flex-shrink: 0; }
+    .btn-compare-action { flex: 1; padding: 0.7rem 1rem; border-radius: 0.8rem; font-family: 'Poppins', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
+    .btn-add-more { background: var(--bg3); border: 1px solid var(--border); color: var(--text); }
+    .btn-add-more:hover { border-color: var(--red); color: var(--red); }
+    .btn-exit-compare { background: linear-gradient(135deg, var(--red), var(--red-dark)); color: white; }
+    .fab-view-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 1rem; padding: 2px 10px; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+
+    /* ── CATALOG TABLE ── */
+    .catalog-toolbar {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 1rem 1.2rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;
+    }
+    .catalog-stats {
+      padding: 0.6rem 1.2rem; font-size: 0.75rem; color: var(--text-muted);
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .table-wrap { padding: 1.2rem; overflow-x: auto; }
+    .apd-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--bg2); border-radius: 1rem; overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); font-size: 0.8rem;
+    }
+    .apd-table thead tr { background: linear-gradient(135deg, #2d3748 0%, #3d4a5c 100%); }
+    .apd-table thead th {
+      padding: 0.85rem 1rem; text-align: left; font-size: 0.72rem; font-weight: 700;
+      color: rgba(255,255,255,0.85); letter-spacing: 0.4px; text-transform: uppercase;
+      white-space: nowrap; cursor: pointer; user-select: none; transition: 0.15s;
+    }
+    .apd-table thead th:hover { color: #fff; }
+    .apd-table thead th .sort-icon { font-size: 0.6rem; margin-left: 4px; opacity: 0.5; }
+    .apd-table thead th.sorted .sort-icon { opacity: 1; color: var(--red); }
+    .apd-table tbody tr { border-bottom: 1px solid var(--border); transition: 0.15s; }
+    .apd-table tbody tr:last-child { border-bottom: none; }
+    .apd-table tbody tr:hover { background: var(--red-subtle); }
+    .apd-table td { padding: 0.75rem 1rem; vertical-align: middle; }
+    .apd-table .td-img { width: 60px; text-align: center; }
+    .apd-table .td-img img { width: 44px; height: 44px; object-fit: contain; cursor: pointer; transition: 0.2s; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); }
+    .apd-table .td-img img:hover { transform: scale(1.15); }
+    .apd-table .td-img .tbl-img-ph { width: 44px; height: 44px; background: var(--bg3); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin: 0 auto; cursor: pointer; }
+    .td-nama-text { font-weight: 700; color: var(--text); font-size: 0.82rem; }
+    .td-kat span { background: var(--red-subtle); color: var(--red); padding: 3px 9px; border-radius: 2rem; font-size: 0.68rem; font-weight: 600; white-space: nowrap; }
+
+    /* Catalog tag pills */
+    .tag-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag-pill { background: var(--bg3); border: 1px solid var(--border); border-radius: 2rem; padding: 2px 8px; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); font-family: monospace; }
+    .tag-pill.none { color: var(--text-muted); font-style: italic; font-size: 0.68rem; font-family: inherit; background: none; border: none; padding: 0; }
+
+    /* MID in catalog */
+    .tbl-mid-wrap { display: flex; align-items: center; gap: 0.4rem; }
+    .tbl-mid-val { font-family: monospace; font-size: 0.82rem; font-weight: 700; color: var(--text); }
+    .tbl-copy-btn {
+      background: var(--bg3); border: 1px solid var(--border); border-radius: 6px;
+      cursor: pointer; padding: 3px 5px; display: inline-flex; align-items: center;
+      justify-content: center; transition: 0.2s; flex-shrink: 0; opacity: 0;
+    }
+    tr:hover .tbl-copy-btn { opacity: 1; }
+    .tbl-copy-btn:hover { background: var(--text); border-color: var(--text); }
+    .tbl-copy-btn:hover svg { stroke: white; }
+    .tbl-copy-btn svg { width: 13px; height: 13px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: 0.2s; }
+    .tbl-life-wrap { display: flex; align-items: center; gap: 0.5rem; }
+    .tbl-info-icon { width: 26px; height: 26px; flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+    .tbl-info-icon svg { width: 13px; height: 13px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .tbl-life-val { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+    .mid-empty, .lifetime-empty { color: var(--text-muted); font-style: italic; font-size: 0.72rem; }
+
+    /* Catalog MID — sized select */
+    .mid-sized-wrap { display: flex; flex-direction: column; gap: 4px; }
+    .mid-sized-select { background: var(--bg3); border: 1px solid var(--border); border-radius: 0.5rem; padding: 3px 6px; font-family: 'Poppins', sans-serif; font-size: 0.72rem; color: var(--text); cursor: pointer; outline: none; }
+    .mid-sized-select:focus { border-color: var(--red); }
+
+    /* ── FEEDBACK FAB ── */
+    .fab-feedback {
+      position: fixed; bottom: 1.5rem; left: 1.5rem;
+      background: linear-gradient(135deg, #2d3748, #3d4a5c);
+      color: white; border: none; border-radius: 2rem;
+      padding: 0.85rem 1.4rem; font-family: 'Poppins', sans-serif;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      display: flex; align-items: center; gap: 0.5rem;
+      z-index: 500; transition: 0.2s;
+    }
+    .fab-feedback:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.3); }
+
+    /* ── FEEDBACK MODAL ── */
+    .fb-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 1000;
+      align-items: center; justify-content: center; padding: 2rem;
+      backdrop-filter: blur(4px);
+    }
+    .fb-overlay.show { display: flex; }
+    .fb-panel {
+      background: var(--card); border-radius: 1.5rem 1.5rem 1.5rem 1.5rem;
+      width: 100%; max-width: 520px; padding: 1.8rem 1.8rem 2rem;
+      animation: slideUp 0.25s ease;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
+      max-height: 85vh; overflow-y: auto;
+    }
+    @keyframes slideUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .fb-handle {
+      width: 40px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 0 auto 1.5rem;
+    }
+    .fb-title {
+      font-size: 1.05rem; font-weight: 700; color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+    .fb-subtitle {
+      font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.4rem;
+    }
+
+    /* Jenis pills */
+    .fb-jenis-row {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem; margin-bottom: 1.2rem;
+    }
+    .fb-jenis-btn {
+      background: var(--bg3); border: 1.5px solid var(--border);
+      border-radius: 0.75rem; padding: 0.4rem 0.5rem;
+      text-align: center; cursor: pointer; transition: 0.2s;
+      font-family: 'Poppins', sans-serif;
+    }
+    .fb-jenis-btn:hover { border-color: var(--text); }
+    .fb-jenis-btn.active {
+      background: var(--red-subtle); border-color: var(--red);
+    }
+    .fb-jenis-btn .jenis-icon { font-size: 1.2rem; display: block; margin-bottom: 3px; }
+    .fb-jenis-btn .jenis-label {
+      font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
+    }
+    .fb-jenis-btn.active .jenis-label { color: var(--red); }
+
+    /* Form fields */
+    .fb-label {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.4rem;
+      display: block;
+    }
+    .fb-input {
+      width: 100%; background: var(--bg3); border: 1.5px solid var(--border);
+      border-radius: 0.75rem; color: var(--text);
+      font-family: 'Poppins', sans-serif; font-size: 0.83rem;
+      padding: 0.65rem 0.9rem; outline: none; transition: 0.2s;
+      margin-bottom: 1rem; resize: none;
+      box-sizing: border-box;
+    }
+    .fb-input:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-glow); }
+    .fb-input::placeholder { color: var(--text-muted); }
+    textarea.fb-input { min-height: 100px; line-height: 1.5; }
+
+    /* Submit button */
+    .fb-submit {
+      width: 100%; padding: 0.85rem; border: none; border-radius: 0.9rem;
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      color: white; font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      transition: 0.2s; margin-top: 0.25rem;
+    }
+    .fb-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+    .fb-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Success state */
+    .fb-success {
+      text-align: center; padding: 2rem 1rem;
+      display: none; flex-direction: column; align-items: center; gap: 0.75rem;
+    }
+    .fb-success.show { display: flex; }
+    .fb-success-icon { font-size: 3rem; }
+    .fb-success h4 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 0; }
+    .fb-success p  { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+    .fb-success-close {
+      margin-top: 0.5rem; padding: 0.65rem 2rem; border: none;
+      border-radius: 2rem; background: var(--bg3); border: 1px solid var(--border);
+      font-family: 'Poppins', sans-serif; font-size: 0.82rem;
+      font-weight: 600; cursor: pointer; color: var(--text); transition: 0.2s;
+    }
+    .fb-success-close:hover { background: var(--red); color: white; border-color: var(--red); }
+
+    .fb-anon-note {
+      font-size: 0.68rem; color: var(--text-muted);
+      text-align: center; margin-top: 0.75rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+    }
+
+    .fb-photo-wrap {
+      width: 100%; min-height: 100px;
+      background: var(--bg3); border: 1.5px dashed var(--border);
+      border-radius: 0.75rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem; overflow: hidden; transition: 0.2s;
+      position: relative;
+    }
+    .fb-photo-wrap:hover { border-color: var(--red); background: var(--red-subtle); }
+    .fb-photo-placeholder { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 1.2rem; }
+    .fb-photo-wrap img { width: 100%; max-height: 200px; object-fit: contain; display: block; }
+    .fb-photo-remove {
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      background: rgba(0,0,0,0.5); color: white; border: none;
+      border-radius: 50%; width: 24px; height: 24px; font-size: 0.7rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      z-index: 10;
+    }
+    .fb-photo-remove:hover { background: var(--red); }
+
+  </style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="mid-toast" id="midToast">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  Berhasil Disalin
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-badge">🦺</div>
+    <div class="header-text">
+      <h2>MATRIKS ALAT PELINDUNG DIRI</h2>
+      <p>PT. Sayap Mas Utama</p>
+    </div>
+    <div class="header-pill">Integrated Management System Department</div>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs-custom">
+  <div class="nav-tab active" id="tab-matriks" onclick="switchTab('matriks')">⚠️ Matriks Risiko</div>
+  <div class="nav-tab"        id="tab-catalog"  onclick="switchTab('catalog')">🛡️ Katalog APD</div>
+</div>
+
+<!-- PAGE 1 — MATRIKS RISIKO -->
+<div class="page active" id="page-matriks">
+  <div class="toolbar">
+    <div class="search-risk-wrap">
+      <span class="icon">🔍</span>
+      <input class="dark-input search-risk" type="text" id="searchBox" placeholder="Cari risiko atau APD..." oninput="onSearch()">
+    </div>
+    <div class="section-wrap">
+      <div class="dark-input section-selected" id="sectionSelected" onclick="toggleDropdown()">
+        <span id="sectionLabel">Semua Section</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="section-dropdown" id="sectionDropdown">
+        <div class="section-search">
+          <input type="text" id="sectionSearch" placeholder="Cari section..." oninput="filterSectionList()" onclick="event.stopPropagation()">
+        </div>
+        <div class="section-list" id="sectionList"></div>
+      </div>
+    </div>
+    <button class="dark-input" id="viewToggleBtn" onclick="toggleView()" style="cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:6px;">
+      <span id="viewIcon">☰</span> <span id="viewLabel">List</span>
+    </button>
+    <button class="dark-input" onclick="refreshData()" style="cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:6px;">
+      🔄 Refresh
+    </button>
+  </div>
+  <div class="stats-bar" id="statsBar">
+    <div class="spinner" style="width:18px;height:18px;border-width:2px;display:inline-block;"></div>
+    <span>Memuat data...</span>
+  </div>
+  <div id="content"></div>
+</div>
+
+<!-- PAGE 2 — KATALOG APD -->
+<div class="page" id="page-catalog">
+  <div class="catalog-toolbar">
+    <div class="search-risk-wrap" style="flex:1;min-width:200px;">
+      <span class="icon">🔍</span>
+      <input class="dark-input search-risk" type="text" id="catalogSearch" placeholder="Cari nama, MID, kategori..." oninput="renderCatalog()" style="width:100%;">
+    </div>
+    <div class="section-wrap" style="min-width:200px;max-width:260px;">
+      <div class="dark-input section-selected" id="katSelected" onclick="toggleKatDropdown()">
+        <span id="katLabel">Semua Kategori</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="section-dropdown" id="katDropdown">
+        <div class="section-search">
+          <input type="text" id="katSearch" placeholder="Cari kategori..." oninput="filterKatList()" onclick="event.stopPropagation()">
+        </div>
+        <div class="section-list" id="katList"></div>
+      </div>
+    </div>
+    <button class="dark-input" onclick="refreshCatalog()" style="cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:6px;">
+      🔄 Refresh
+    </button>
+  </div>
+  <div class="catalog-stats" id="catalogStats">
+    <div class="spinner" style="width:18px;height:18px;border-width:2px;display:inline-block;"></div>
+    <span>Memuat katalog...</span>
+  </div>
+  <div class="table-wrap">
+    <table class="apd-table" id="apdTable">
+      <thead>
+        <tr>
+          <th style="width:40px;cursor:default;">#</th>
+          <th style="width:60px;cursor:default;">Gambar</th>
+          <th onclick="sortCatalog('nama')">Nama <span class="sort-icon" id="sort-nama">↕</span></th>
+          <th onclick="sortCatalog('kategori')">Kategori <span class="sort-icon" id="sort-kategori">↕</span></th>
+          <th>Size</th>
+          <th>Type</th>
+          <th onclick="sortCatalog('mid')">MID <span class="sort-icon" id="sort-mid">↕</span></th>
+          <th onclick="sortCatalog('lifetime')">Lifetime <span class="sort-icon" id="sort-lifetime">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="catalogTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="imgModal" onclick="closeModal(event)">
+  <div class="modal-box ppe-count-1" id="modalBox">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <!-- Category label shown when opening from a group -->
+    <div id="modalCatHeader" style="display:none;" class="modal-cat-header">
+      <span class="modal-cat-title" id="modalCatTitle"></span>
+    </div>
+    <!-- Multi-PPE row -->
+    <div class="modal-ppe-row" id="modalPpeRow"></div>
+    <!-- Legacy single-PPE info (reused) -->
+    <div id="modalInfoBlock"></div>
+  </div>
+</div>
+
+<!-- COMPARE FAB -->
+<button class="fab-compare" id="fabCompare" onclick="toggleCompareMode()">⚖️ Bandingkan Risiko</button>
+
+<!-- COMPARE PANEL -->
+<div class="compare-overlay" id="compareOverlay" onclick="closeComparePanel(event)">
+  <div class="compare-panel" id="comparePanel">
+    <div class="compare-panel-header">
+      <div class="header-left"><h4>⚖️ Perbandingan APD</h4></div>
+      <h4>⚖️ Perbandingan APD</h4>
+      <button class="compare-close" onclick="closeComparePanel()">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding-bottom:1rem;">
+      <div class="selected-risks" id="compareRiskTags"></div>
+      <div id="compareCategoryBlocks"></div>
+      <div class="compare-summary">
+        <h6>📋 Ringkasan APD yang Dipilih <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400">· klik untuk detail</span></h6>
+        <div class="summary-chips" id="compareSummary"></div>
+      </div>
+    </div>
+    <div class="compare-actions">
+      <button class="btn-compare-action btn-add-more" onclick="addMoreRisk()">➕ Tambah Risiko</button>
+      <button class="btn-compare-action btn-exit-compare" onclick="exitCompare()">✅ Selesai</button>
+    </div>
+  </div>
+</div>
+
+<!-- FEEDBACK FAB -->
+<button class="fab-feedback" onclick="openFeedback()">💬 Feedback</button>
+
+<!-- FEEDBACK PANEL -->
+<div class="fb-overlay" id="fbOverlay" onclick="closeFeedbackOutside(event)">
+  <div class="fb-panel" id="fbPanel">
+
+    <!-- Form view -->
+    <div id="fbForm">
+      <div class="fb-title">💬 Feedback & Laporan</div>
+      <div class="fb-subtitle">Temukan bug atau punya saran? Sampaikan di sini!</div>
+
+      <!-- Jenis -->
+      <label class="fb-label">Jenis Feedback</label>
+      <div class="fb-jenis-row">
+        <div class="fb-jenis-btn active" data-jenis="Bug 🐛" onclick="selectJenis(this)">
+          <span class="jenis-icon">🐛</span>
+          <span class="jenis-label">Bug / Error</span>
+        </div>
+        <div class="fb-jenis-btn" data-jenis="Saran 💡" onclick="selectJenis(this)">
+          <span class="jenis-icon">💡</span>
+          <span class="jenis-label">Saran / Ide</span>
+        </div>
+        <div class="fb-jenis-btn" data-jenis="Data Salah ❌" onclick="selectJenis(this)">
+          <span class="jenis-icon">❌</span>
+          <span class="jenis-label">Data Salah</span>
+        </div>
+        <div class="fb-jenis-btn" data-jenis="Lainnya 💬" onclick="selectJenis(this)">
+          <span class="jenis-icon">💬</span>
+          <span class="jenis-label">Lainnya</span>
+        </div>
+      </div>
+
+      <!-- Deskripsi -->
+      <label class="fb-label">Deskripsi <span style="color:var(--red)">*</span></label>
+      <textarea class="fb-input" id="fbDeskripsi" placeholder="Ceritakan detail masalah atau saranmu..."></textarea>
+
+      <!-- Foto (opsional) -->
+      <label class="fb-label">Foto <span style="color:var(--text-muted)">(opsional)</span></label>
+      <div class="fb-photo-wrap" id="fbPhotoWrap" onclick="document.getElementById('fbPhotoInput').click()">
+        <input type="file" id="fbPhotoInput" accept="image/*" multiple style="display:none;" onchange="onPhotoSelected(event)">
+        <div id="fbPhotoPreview" class="fb-photo-placeholder">
+          <span style="font-size:1.5rem;">📷</span>
+          <span style="font-size:0.75rem;color:var(--text-muted);">Klik untuk upload foto (bisa lebih dari 1)</span>
+        </div>
+      </div>
+
+      <!-- Nama -->
+      <label class="fb-label">Nama <span style="color:var(--red)">*</span></label>
+      <input class="fb-input" id="fbNama" type="text" placeholder="Tuliskan nama kamu agar bisa kami follow up...">
+
+      <button class="fb-submit" id="fbSubmitBtn" onclick="submitFeedbackForm()">
+        Kirim Feedback 🚀
+      </button>
+      <div class="fb-anon-note">🔒 Data hanya dilihat oleh admin sistem</div>
+    </div>
+
+    <!-- Success view -->
+    <div class="fb-success" id="fbSuccess">
+      <div class="fb-success-icon">🎉</div>
+      <h4>Terima kasih!</h4>
+      <p>Feedback kamu sudah diterima dan<br>akan segera kami tindaklanjuti.</p>
+      <button class="fb-success-close" onclick="closeFeedback()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ SVG ICONS ══ */
+const SVG_CLOCK = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+const SVG_CARD  = `<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>`;
+const SVG_TYPE  = `<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
+const SVG_SIZE  = `<svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>`;
+const SVG_COPY  = `<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+
+/* ══ STATE ══ */
+let rawData       = [];
+let activeSection = 'All';
+let searchTerm    = '';
+let allSections   = [];
+let imageCache    = {};
+let catalogData   = [];
+let catalogSort   = { key: 'nama', dir: 1 };
+let activeKat     = 'All';
+let _catalogRows  = [];
+let currentView   = 'gallery';
+let _fetchingUrls = new Set();
+
+/* ══ MODAL STATE — tracks current APD for picker interaction ══ */
+let _modal = {
+  apdData:       null,
+  selectedType:  '',
+  selectedSize:  '',
+  base64Images:  {},
+  // Multi-PPE modal state: array of per-column modal state
+  cols: []
+};
+
+/* ══ TOAST ══ */
+let toastTimer = null;
+function showToast() {
+  const t = document.getElementById('midToast');
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+function copyToClipboard(text, btn) {
+  if (!text || text === '—') return;
+  const doShow = () => {
+    showToast();
+    if (btn) {
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      setTimeout(() => { btn.innerHTML = SVG_COPY; }, 1800);
+    }
+  };
+  navigator.clipboard.writeText(text).then(doShow).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta); doShow();
+  });
+}
+
+/* ══ TAB ══ */
+function switchTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('fabCompare').style.display = tab === 'matriks' ? 'flex' : 'none';
+  if (tab === 'catalog' && catalogData.length === 0) loadCatalog();
+}
+
+/* ══ INIT ══ */
+window.onload = function() {
+  google.script.run
+    .withSuccessHandler(function(baked) {
+      if (baked && baked.length) { onDataLoaded(baked); }
+      else { loadData(); }
+    })
+    .withFailureHandler(function() { loadData(); })
+    .getBakedData();
+};
+
+function loadData() {
+  document.getElementById('statsBar').innerHTML = `<div class="spinner" style="width:18px;height:18px;border-width:2px;display:inline-block;"></div><span>Memuat data...</span>`;
+  google.script.run.withSuccessHandler(onDataLoaded).withFailureHandler(onError).getData();
+  google.script.run.prewarmImageCache();
+}
+
+function refreshData() {
+  imageCache = {};
+  _fetchingUrls = new Set();
+  google.script.run
+    .withSuccessHandler(function() { loadData(); })
+    .withFailureHandler(function()  { loadData(); })
+    .clearImageCache();
+}
+
+function onDataLoaded(data) {
+  rawData = data || [];
+  allSections = [...new Set(rawData.map(d => d.section).filter(Boolean))].sort();
+  buildSectionList();
+  renderAll();
+  const allImagesLoaded = rawData.every(d =>
+    d.apd.every(a => !a.imageLink || a._base64)
+  );
+  if (allImagesLoaded) return;
+  google.script.run
+    .withSuccessHandler(function(store) {
+      if (!store) return;
+      Object.entries(store).forEach(([url, b64]) => {
+        if (b64 && b64.startsWith('data:image/')) imageCache[url] = b64;
+      });
+      rawData.forEach(item => {
+        item.apd.forEach((a) => {
+          if (a.imageLink && imageCache[a.imageLink]) {
+            a._base64 = imageCache[a.imageLink];
+          }
+          if (a.apdData && store) {
+            a.apdData._base64Images = a.apdData._base64Images || {};
+            if (a.apdData.images) {
+              Object.keys(a.apdData.images).forEach(typeKey => {
+                const url = a.apdData.images[typeKey];
+                if (url && store[url] && store[url].startsWith('data:image/')) {
+                  a.apdData._base64Images[typeKey] = store[url];
+                }
+              });
+            }
+          }
+        });
+      });
+      renderAll();
+      if (catalogData.length) {
+        catalogData.forEach(item => {
+          if (!item._base64 && item.link && imageCache[item.link]) {
+            item._base64 = imageCache[item.link];
+          }
+        });
+      }
+    })
+    .withFailureHandler(function() {})
+    .getImageStore();
+}
+
+function onError(err) {
+  document.getElementById('statsBar').innerHTML = `<span style="color:var(--red)">❌ ${err.message || err}</span>`;
+}
+
+/* ══ SECTION DROPDOWN ══ */
+function buildSectionList(filter = '') {
+  const f = filter.toLowerCase(), counts = {};
+  rawData.forEach(d => { counts[d.section] = (counts[d.section] || 0) + 1; });
+  const items = [
+    { label: 'Semua Section', val: 'All', count: rawData.length },
+    ...allSections.map(s => ({ label: s, val: s, count: counts[s] || 0 }))
+  ];
+  document.getElementById('sectionList').innerHTML = items
+    .filter(s => s.label.toLowerCase().includes(f))
+    .map(s => `<div class="section-item ${activeSection === s.val ? 'active' : ''}" onclick="selectSection('${esc(s.val)}','${esc(s.label)}')">${s.label}<span class="count">${s.count}</span></div>`)
+    .join('') || `<div class="section-item">Tidak ditemukan</div>`;
+}
+function filterSectionList() { buildSectionList(document.getElementById('sectionSearch').value); }
+function toggleDropdown() {
+  const sel = document.getElementById('sectionSelected'), drop = document.getElementById('sectionDropdown');
+  const open = drop.classList.toggle('open');
+  sel.classList.toggle('open', open);
+  if (open) setTimeout(() => document.getElementById('sectionSearch').focus(), 50);
+}
+function selectSection(val, label) {
+  activeSection = val;
+  document.getElementById('sectionLabel').textContent = label;
+  document.getElementById('sectionSelected').classList.remove('open');
+  document.getElementById('sectionDropdown').classList.remove('open');
+  document.getElementById('sectionSearch').value = '';
+  buildSectionList(); renderAll();
+}
+
+/* ══ SEARCH & FILTER ══ */
+function onSearch() { searchTerm = document.getElementById('searchBox').value.toLowerCase().trim(); renderAll(); }
+function getFiltered() {
+  return rawData.filter(item => {
+    const matchSection = activeSection === 'All' || item.section === activeSection;
+    const matchSearch  = !searchTerm ||
+      item.resiko.toLowerCase().includes(searchTerm) ||
+      item.apd.some(a => a.nama.toLowerCase().includes(searchTerm) || a.kategori.toLowerCase().includes(searchTerm));
+    return matchSection && matchSearch;
+  });
+}
+
+/* ══ GROUP APD BY CATEGORY ══ */
+function groupApdByCategory(apdList) {
+  // Returns ordered array of { kategori, items: [...apd] }
+  const order = [];
+  const map = {};
+  apdList.forEach(a => {
+    const k = a.kategori || 'Lainnya';
+    if (!map[k]) { map[k] = []; order.push(k); }
+    map[k].push(a);
+  });
+  return order.map(k => ({ kategori: k, items: map[k] }));
+}
+
+/* ══ RENDER MATRIKS ══ */
+function renderAll() {
+  const filtered = getFiltered(), content = document.getElementById('content');
+  // NEW CODE
+  if (searchTerm) {
+    document.getElementById('statsBar').innerHTML = `<span>Hasil pencarian untuk: <b style="color:var(--text)">"${searchTerm}"</b></span>`;
+    document.getElementById('statsBar').style.display = 'flex';
+  } else {
+    // This hides the bar entirely when not searching, 
+    // since the counts are already in the Section Headers.
+    document.getElementById('statsBar').style.display = 'none'; 
+  }
+  if (!filtered.length) {
+    content.innerHTML = `<div class="loading-wrap"><div style="font-size:2.5rem;margin-bottom:1rem;">🔎</div><p>Tidak ada data yang cocok.</p></div>`;
+    return;
+  }
+  const grouped = {};
+  filtered.forEach(item => { const sec = item.section || 'General'; if (!grouped[sec]) grouped[sec] = []; grouped[sec].push(item); });
+  let html = '';
+  for (const [sec, items] of Object.entries(grouped)) {
+    html += `<div class="section-header"><h5>📂 ${sec}</h5><div class="line"></div><span class="sec-count">${items.length} risiko</span></div><div class="cards-grid">${items.map(cardHtml).join('')}</div>`;
+  }
+  content.innerHTML = html;
+}
+
+function cardHtml(item) {
+  const isList = currentView === 'list';
+  const safeId = String(item.id).replace(/[^a-zA-Z0-9_-]/g, '_');
+
+  // Group APD by category
+  const catGroups = groupApdByCategory(item.apd);
+
+  // Build group HTML
+  const groupsHtml = catGroups.map(group => {
+    // Build chips for this group
+    const chipsHtml = group.items.map((a, localIdx) => {
+      // Find global apd index
+      const globalIdx = item.apd.indexOf(a);
+      const imgHtml = a._base64
+        ? `<img src="${a._base64}">`
+        : a.imageLink
+          ? `<div class="img-ph" id="ph-${safeId}-${globalIdx}"></div>`
+          : `<div class="img-ph no-img" id="ph-${safeId}-${globalIdx}">🛡️</div>`;
+
+      return `
+        <div class="apd-chip"
+            onclick="openCategoryModal('${esc(item.id)}','${esc(group.kategori)}')">
+          ${imgHtml}
+          <div class="chip-nama">${a.nama}</div>
+          <span class="chip-kat">${a.kategori}</span>
+        </div>`;
+    }).join('');
+
+    // Encode the item.id and category for the click handler
+    return `
+      <div class="apd-cat-group"
+           data-itemid="${esc(item.id)}"
+           data-kategori="${esc(group.kategori)}">
+        ${chipsHtml}
+      </div>`;
+  }).join('');
+
+  const apdContent = catGroups.length
+    ? `<div class="apd-groups">${groupsHtml}</div>`
+    : `<p style="font-size:0.75rem;color:var(--text-muted)">Tidak ada APD</p>`;
+
+  if (isList) {
+    return `
+      <div class="risk-card" data-itemid="${esc(item.id)}">
+        <div class="list-meta">
+          <span class="badge-no">No. ${item.no}</span>
+          <span class="badge-id">${item.id}</span>
+        </div>
+        <div class="risk-title">${item.resiko}</div>
+        ${apdContent}
+        <div class="compare-icon">+</div>
+      </div>`;
+  }
+  return `
+    <div class="risk-card" data-itemid="${esc(item.id)}">
+      <div class="card-top">
+        <span class="badge-no">No. ${item.no}</span>
+        <span class="badge-id">${item.id}</span>
+      </div>
+      <div class="risk-label">⚠️ Asumsi / Bahaya</div>
+      <div class="risk-title">${item.resiko}</div>
+      ${apdContent}
+      <div class="compare-icon">+</div>
+    </div>`;
+}
+
+/* ══ MULTI-PPE MODAL ══ */
+// Opens a modal showing all PPEs in a given category group
+function openCategoryModal(itemId, kategori) {
+  const item = rawData.find(d => d.id === itemId);
+  if (!item) return;
+  const apdInCat = item.apd.filter(a => (a.kategori || 'Lainnya') === kategori);
+  if (!apdInCat.length) return;
+
+  const count = apdInCat.length;
+  const box = document.getElementById('modalBox');
+
+  // Set width class
+  box.className = 'modal-box ppe-count-' + Math.min(count, 4);
+
+  // Show category header
+  document.getElementById('modalCatHeader').style.display = '';
+  document.getElementById('modalCatTitle').textContent = kategori;
+
+  // Build per-column state
+  _modal.cols = apdInCat.map(apd => ({
+    apdData:      apd.apdData || null,
+    selectedType: '',
+    selectedSize: '',
+    base64Images: (apd.apdData && apd.apdData._base64Images) ? { ...apd.apdData._base64Images } : {},
+    fallback:     apd._base64 || ''
+  }));
+
+  // Build PPE columns
+  let ppeRowHtml = apdInCat.map((apd, colIdx) => {
+    const col = _modal.cols[colIdx];
+    const variants = col.apdData ? (col.apdData.variants || []) : [];
+    const types    = [...new Set(variants.map(v => v.type).filter(Boolean))];
+    const allSizes = [...new Set(variants.map(v => v.size).filter(Boolean))];
+
+    // Auto-select first type / size
+    col.selectedType = types.length ? types[0] : '';
+    const sizesForType = getSizesForType(col.selectedType, variants);
+    col.selectedSize = sizesForType.length ? sizesForType[0] : '';
+
+    // Image
+    const imgSrc = col.base64Images[col.selectedType] || col.fallback || '';
+    const imgHtml = imgSrc
+      ? `<img src="${imgSrc}" alt="" id="modal-img-${colIdx}">`
+      : `<div class="modal-img-ph" id="modal-img-${colIdx}">🛡️</div>`;
+
+    // Info rows
+    let infoHtml = '';
+
+    // Lifetime
+    const lifetime = col.apdData ? (col.apdData.lifetime || '') : '';
+    infoHtml += `
+      <div class="modal-info-row">
+        <div class="modal-info-icon">${SVG_CLOCK}</div>
+        <span class="modal-info-label">Lifetime</span>
+        <span class="modal-info-value${!lifetime ? ' empty' : ''}">${lifetime || 'Tidak tersedia'}</span>
+      </div>`;
+
+    // Type picker
+    if (types.length) {
+      const pills = types.map(t =>
+        `<span class="pill${t === col.selectedType ? ' active' : ''}" data-type="${esc(t)}" onclick="onColTypeClick(${colIdx},'${esc(t)}')">${t}</span>`
+      ).join('');
+      infoHtml += `
+        <div class="modal-info-row col-layout">
+          <div style="display:flex;align-items:center;gap:0.6rem;">
+            <div class="modal-info-icon">${SVG_TYPE}</div>
+            <span class="modal-info-label" style="min-width:auto;">Type</span>
+          </div>
+          <div class="pills-row" id="typePills-${colIdx}">${pills}</div>
+        </div>`;
+    }
+
+    // Size picker
+    if (allSizes.length) {
+      const pills = sizesForType.map(s =>
+        `<span class="pill${s === col.selectedSize ? ' active' : ''}" data-size="${esc(s)}" onclick="onColSizeClick(${colIdx},'${esc(s)}')">${s}</span>`
+      ).join('');
+      infoHtml += `
+        <div class="modal-info-row col-layout">
+          <div style="display:flex;align-items:center;gap:0.6rem;">
+            <div class="modal-info-icon">${SVG_SIZE}</div>
+            <span class="modal-info-label" style="min-width:auto;">Size</span>
+          </div>
+          <div class="pills-row" id="sizePills-${colIdx}">${pills}</div>
+        </div>`;
+    }
+
+    // MID
+    const mid = getMid(variants, col.selectedType, col.selectedSize);
+    infoHtml += `
+      <div class="modal-info-row">
+        <div class="modal-info-icon">${SVG_CARD}</div>
+        <span class="modal-info-label">MID</span>
+        <div style="margin-left:auto;">
+          ${mid
+            ? `<div class="mid-result">
+                 <span class="mid-result-val" id="mid-val-${colIdx}">${mid}</span>
+                 <button class="mid-copy-btn" id="mid-copy-${colIdx}" onclick="copyToClipboard(document.getElementById('mid-val-${colIdx}').textContent,this)">${SVG_COPY}</button>
+               </div>`
+            : `<span class="modal-info-value empty" id="mid-val-${colIdx}">Tidak tersedia</span>`}
+        </div>
+      </div>`;
+
+    return `
+      <div class="modal-ppe-col">
+        <div class="modal-img-wrap">${imgHtml}</div>
+        <h6>${apd.nama}</h6>
+        <div class="modal-info">${infoHtml}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('modalPpeRow').innerHTML = ppeRowHtml;
+  document.getElementById('modalInfoBlock').innerHTML = ''; // clear legacy single block
+
+  // Fetch missing images per column
+  apdInCat.forEach((apd, colIdx) => {
+    const col = _modal.cols[colIdx];
+    fetchColImage(colIdx, col.selectedType, apd);
+  });
+
+  document.getElementById('imgModal').classList.add('show');
+}
+
+function fetchColImage(colIdx, typeKey, apd) {
+  const col = _modal.cols[colIdx];
+  if (!col) return;
+
+  // Already have it
+  if (col.base64Images[typeKey]) {
+    updateColImage(colIdx, col.base64Images[typeKey]);
+    return;
+  }
+  // Use fallback for empty-type
+  if (!typeKey && col.fallback) {
+    updateColImage(colIdx, col.fallback);
+    return;
+  }
+
+  const url = col.apdData && col.apdData.images ? (col.apdData.images[typeKey] || '') : '';
+  if (!url) return;
+
+  if (imageCache[url]) {
+    col.base64Images[typeKey] = imageCache[url];
+    updateColImage(colIdx, imageCache[url]);
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(b64) {
+      if (!b64 || !b64.startsWith('data:image/')) return;
+      imageCache[url] = b64;
+      if (_modal.cols[colIdx]) {
+        _modal.cols[colIdx].base64Images[typeKey] = b64;
+        // Only update if this is still the selected type
+        if (_modal.cols[colIdx].selectedType === typeKey) {
+          updateColImage(colIdx, b64);
+        }
+      }
+    })
+    .withFailureHandler(function() {})
+    .getImageCached(url);
+}
+
+function updateColImage(colIdx, src) {
+  const el = document.getElementById('modal-img-' + colIdx);
+  if (!el) return;
+  if (el.tagName === 'IMG') {
+    el.src = src;
+  } else {
+    const img = document.createElement('img');
+    img.src = src; img.id = 'modal-img-' + colIdx;
+    el.replaceWith(img);
+  }
+}
+
+function onColTypeClick(colIdx, type) {
+  const col = _modal.cols[colIdx];
+  if (!col) return;
+  col.selectedType = type;
+
+  document.querySelectorAll(`#typePills-${colIdx} .pill`).forEach(p => {
+    p.classList.toggle('active', p.dataset.type === type);
+  });
+
+  // Find original apd for this col
+  // We need to find the apd — stored via cols order matching apdInCat order
+  fetchColImage(colIdx, type, null);
+
+  // Refresh sizes
+  const variants     = col.apdData ? col.apdData.variants : [];
+  const sizesForType = getSizesForType(type, variants);
+  col.selectedSize   = sizesForType.length ? sizesForType[0] : '';
+
+  const sizeWrap = document.getElementById('sizePills-' + colIdx);
+  if (sizeWrap) {
+    sizeWrap.innerHTML = sizesForType.map(s =>
+      `<span class="pill${s === col.selectedSize ? ' active' : ''}" data-size="${esc(s)}" onclick="onColSizeClick(${colIdx},'${esc(s)}')">${s}</span>`
+    ).join('');
+  }
+  updateColMid(colIdx);
+}
+
+function onColSizeClick(colIdx, size) {
+  const col = _modal.cols[colIdx];
+  if (!col) return;
+  col.selectedSize = size;
+  document.querySelectorAll(`#sizePills-${colIdx} .pill`).forEach(p => {
+    p.classList.toggle('active', p.dataset.size === size);
+  });
+  updateColMid(colIdx);
+}
+
+function updateColMid(colIdx) {
+  const col = _modal.cols[colIdx];
+  if (!col) return;
+  const variants = col.apdData ? col.apdData.variants : [];
+  const mid      = getMid(variants, col.selectedType, col.selectedSize);
+  const el       = document.getElementById('mid-val-' + colIdx);
+  if (el) el.textContent = mid || 'Tidak tersedia';
+}
+
+/* ══ MODAL — unified for catalog (single PPE) ══ */
+function openModal(nama, kategori, apdData, defaultBase64, allTypeBase64Images) {
+  _modal.apdData      = apdData;
+  _modal.base64Images = allTypeBase64Images || {};
+  _modal.cols         = [];
+
+  const box = document.getElementById('modalBox');
+  box.className = 'modal-box ppe-count-1';
+
+  document.getElementById('modalCatHeader').style.display = 'none';
+
+  // Build single-PPE in the ppe row
+  const variants = apdData ? (apdData.variants || []) : [];
+  const types    = [...new Set(variants.map(v => v.type).filter(Boolean))];
+  const allSizes = [...new Set(variants.map(v => v.size).filter(Boolean))];
+
+  _modal.selectedType = types.length ? types[0] : '';
+  const sizesForType  = getSizesForType(_modal.selectedType, variants);
+  _modal.selectedSize = sizesForType.length ? sizesForType[0] : '';
+
+  // Image
+  const imgSrc = _modal.base64Images[_modal.selectedType] || defaultBase64 || '';
+  const imgHtml = imgSrc
+    ? `<img src="${imgSrc}" alt="" id="modal-img-single">`
+    : `<div class="modal-img-ph" id="modal-img-single">🛡️</div>`;
+
+  let infoHtml = '';
+  const lifetime = apdData ? (apdData.lifetime || '') : '';
+  infoHtml += `
+    <div class="modal-info-row">
+      <div class="modal-info-icon">${SVG_CLOCK}</div>
+      <span class="modal-info-label">Lifetime</span>
+      <span class="modal-info-value${!lifetime ? ' empty' : ''}">${lifetime || 'Tidak tersedia'}</span>
+    </div>`;
+
+  if (types.length) {
+    const pills = types.map(t =>
+      `<span class="pill${t === _modal.selectedType ? ' active' : ''}" data-type="${esc(t)}" onclick="onTypeClick('${esc(t)}')">${t}</span>`
+    ).join('');
+    infoHtml += `
+      <div class="modal-info-row col-layout">
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <div class="modal-info-icon">${SVG_TYPE}</div>
+          <span class="modal-info-label" style="min-width:auto;">Type</span>
+        </div>
+        <div class="pills-row" id="typePills">${pills}</div>
+      </div>`;
+  }
+
+  if (allSizes.length) {
+    const pills = sizesForType.map(s =>
+      `<span class="pill${s === _modal.selectedSize ? ' active' : ''}" data-size="${esc(s)}" onclick="onSizeClick('${esc(s)}')">${s}</span>`
+    ).join('');
+    infoHtml += `
+      <div class="modal-info-row col-layout">
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <div class="modal-info-icon">${SVG_SIZE}</div>
+          <span class="modal-info-label" style="min-width:auto;">Size</span>
+        </div>
+        <div class="pills-row" id="sizePills">${pills}</div>
+      </div>`;
+  }
+
+  const mid = getMid(variants, _modal.selectedType, _modal.selectedSize);
+  infoHtml += `
+    <div class="modal-info-row">
+      <div class="modal-info-icon">${SVG_CARD}</div>
+      <span class="modal-info-label">MID</span>
+      <div style="margin-left:auto;">
+        ${mid
+          ? `<div class="mid-result">
+               <span class="mid-result-val" id="modalMidVal">${mid}</span>
+               <button class="mid-copy-btn" id="modalCopyBtn" onclick="copyToClipboard(document.getElementById('modalMidVal').textContent, this)">${SVG_COPY}</button>
+             </div>`
+          : `<span class="modal-info-value empty" id="modalMidVal">Tidak tersedia</span>`}
+      </div>
+    </div>`;
+
+  document.getElementById('modalPpeRow').innerHTML = `
+    <div class="modal-ppe-col">
+      <div class="modal-img-wrap">${imgHtml}</div>
+      <h6>${nama}</h6>
+      <div class="modal-info">${infoHtml}</div>
+    </div>`;
+  document.getElementById('modalInfoBlock').innerHTML = '';
+
+  // Fetch missing image
+  if (!imgSrc) {
+    const url = apdData && apdData.images ? (apdData.images[_modal.selectedType] || '') : '';
+    if (url) {
+      if (imageCache[url]) {
+        updateSingleModalImage(imageCache[url]);
+      } else {
+        google.script.run
+          .withSuccessHandler(function(b64) {
+            if (b64 && b64.startsWith('data:image/')) {
+              imageCache[url] = b64;
+              _modal.base64Images[_modal.selectedType] = b64;
+              updateSingleModalImage(b64);
+            }
+          })
+          .withFailureHandler(function() {})
+          .getImageCached(url);
+      }
+    }
+  }
+
+  document.getElementById('imgModal').classList.add('show');
+}
+
+function updateSingleModalImage(src) {
+  const el = document.getElementById('modal-img-single');
+  if (!el) return;
+  if (el.tagName === 'IMG') { el.src = src; }
+  else {
+    const img = document.createElement('img');
+    img.src = src; img.id = 'modal-img-single';
+    el.replaceWith(img);
+  }
+}
+
+/* ══ Single-modal type/size handlers (for catalog modal) ══ */
+function getSizesForType(type, variants) {
+  return [...new Set(
+    variants
+      .filter(v => !type || v.type === type)
+      .map(v => v.size)
+      .filter(Boolean)
+  )];
+}
+
+function getMid(variants, type, size) {
+  const match = variants.find(v => {
+    const typeMatch = !type || v.type === type;
+    const sizeMatch = !size || v.size === size;
+    return typeMatch && sizeMatch;
+  });
+  return match ? match.mid : '';
+}
+
+function onTypeClick(type) {
+  _modal.selectedType = type;
+  document.querySelectorAll('#typePills .pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.type === type);
+  });
+
+  // Update image
+  const src = _modal.base64Images[type] || '';
+  if (src) {
+    updateSingleModalImage(src);
+  } else {
+    const url = _modal.apdData && _modal.apdData.images ? (_modal.apdData.images[type] || '') : '';
+    if (url) {
+      if (imageCache[url]) {
+        _modal.base64Images[type] = imageCache[url];
+        updateSingleModalImage(imageCache[url]);
+      } else {
+        google.script.run
+          .withSuccessHandler(function(b64) {
+            if (b64 && b64.startsWith('data:image/')) {
+              imageCache[url] = b64;
+              _modal.base64Images[type] = b64;
+              updateSingleModalImage(b64);
+            }
+          })
+          .withFailureHandler(function() {})
+          .getImageCached(url);
+      }
+    }
+  }
+
+  const variants     = _modal.apdData ? _modal.apdData.variants : [];
+  const sizesForType = getSizesForType(type, variants);
+  _modal.selectedSize = sizesForType.length ? sizesForType[0] : '';
+
+  const sizeWrap = document.getElementById('sizePills');
+  if (sizeWrap) {
+    sizeWrap.innerHTML = sizesForType.map(s =>
+      `<span class="pill${s === _modal.selectedSize ? ' active' : ''}" data-size="${esc(s)}" onclick="onSizeClick('${esc(s)}')">${s}</span>`
+    ).join('');
+  }
+  updateModalMid();
+}
+
+function onSizeClick(size) {
+  _modal.selectedSize = size;
+  document.querySelectorAll('#sizePills .pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.size === size);
+  });
+  updateModalMid();
+}
+
+function updateModalMid() {
+  const variants = _modal.apdData ? _modal.apdData.variants : [];
+  const mid      = getMid(variants, _modal.selectedType, _modal.selectedSize);
+  const midEl    = document.getElementById('modalMidVal');
+  if (midEl) midEl.textContent = mid || 'Tidak tersedia';
+}
+
+/* ══ CLICK HANDLERS — Matriks chips ══ */
+document.getElementById('content').addEventListener('click', function(e) {
+  // Category group click → open multi-PPE modal
+  const group = e.target.closest('.apd-cat-group');
+  if (group && !compareMode) {
+    const itemId   = group.dataset.itemid;
+    const kategori = group.dataset.kategori;
+    openCategoryModal(itemId, kategori);
+    return;
+  }
+
+  // Compare mode card click
+  if (compareMode) {
+    const card = e.target.closest('.risk-card');
+    if (!card || e.target.closest('.apd-cat-group')) return;
+    const itemId = card.dataset.itemid; if (!itemId) return;
+    if (selectedRisks.includes(itemId)) {
+      selectedRisks = selectedRisks.filter(id => id !== itemId);
+      card.classList.remove('selected');
+      const icon = card.querySelector('.compare-icon'); if (icon) icon.textContent = '+';
+    } else {
+      selectedRisks.push(itemId);
+      card.classList.add('selected');
+      const icon = card.querySelector('.compare-icon'); if (icon) icon.textContent = '✓';
+    }
+    if (selectedRisks.length >= 2) {
+      document.getElementById('fabCompare').innerHTML = `⚖️ Bandingkan <span class="fab-count">${selectedRisks.length}</span><span class="fab-view-btn" onclick="event.stopPropagation();openComparePanel()">Lihat →</span>`;
+    } else {
+      document.getElementById('fabCompare').innerHTML = `⚖️ Bandingkan <span class="fab-count">${selectedRisks.length}</span>`;
+    }
+  }
+});
+
+function closeModal(e) {
+  if (!e || e.target.id === 'imgModal' || e.target.classList.contains('modal-close'))
+    document.getElementById('imgModal').classList.remove('show');
+}
+
+/* ══ CATALOG ══ */
+function loadCatalog() {
+  document.getElementById('catalogStats').innerHTML = `<div class="spinner" style="width:18px;height:18px;border-width:2px;display:inline-block;"></div><span>Memuat katalog...</span>`;
+  google.script.run
+    .withSuccessHandler(onCatalogLoaded)
+    .withFailureHandler(function(err) { document.getElementById('catalogStats').innerHTML = `<span style="color:var(--red)">❌ ${err.message || err}</span>`; })
+    .getApdCatalog();
+}
+function refreshCatalog() {
+  catalogData = [];
+  _fetchingUrls = new Set();
+  loadCatalog();
+}
+
+function onCatalogLoaded(data) {
+  catalogData = data || [];
+  const kats = [...new Set(catalogData.map(d => d.kategori).filter(Boolean))].sort();
+  buildKatList(kats);
+  renderCatalog();
+}
+
+function buildKatList(kats, filter = '') {
+  const f = filter.toLowerCase(), counts = {};
+  catalogData.forEach(d => { counts[d.kategori] = (counts[d.kategori] || 0) + 1; });
+  const items = [
+    { label: 'Semua Kategori', val: 'All', count: catalogData.length },
+    ...kats.map(k => ({ label: k, val: k, count: counts[k] || 0 }))
+  ];
+  document.getElementById('katList').innerHTML = items
+    .filter(k => k.label.toLowerCase().includes(f))
+    .map(k => `<div class="section-item ${activeKat === k.val ? 'active' : ''}" onclick="selectKat('${esc(k.val)}','${esc(k.label)}')">${k.label}<span class="count">${k.count}</span></div>`)
+    .join('') || `<div class="section-item">Tidak ditemukan</div>`;
+}
+
+function filterKatList() {
+  const kats = [...new Set(catalogData.map(d => d.kategori).filter(Boolean))].sort();
+  buildKatList(kats, document.getElementById('katSearch').value);
+}
+
+function toggleKatDropdown() {
+  const sel = document.getElementById('katSelected'), drop = document.getElementById('katDropdown');
+  const open = drop.classList.toggle('open');
+  sel.classList.toggle('open', open);
+  if (open) setTimeout(() => document.getElementById('katSearch').focus(), 50);
+}
+
+function selectKat(val, label) {
+  activeKat = val;
+  document.getElementById('katLabel').textContent = label;
+  document.getElementById('katSelected').classList.remove('open');
+  document.getElementById('katDropdown').classList.remove('open');
+  document.getElementById('katSearch').value = '';
+  const kats = [...new Set(catalogData.map(d => d.kategori).filter(Boolean))].sort();
+  buildKatList(kats);
+  renderCatalog();
+}
+
+function renderCatalog() {
+  _fetchingUrls = new Set();
+  const q = (document.getElementById('catalogSearch')?.value || '').toLowerCase().trim();
+  let rows = catalogData.filter(item => {
+    const matchKat = activeKat === 'All' || item.kategori === activeKat;
+    const allMids  = item.variants.map(v => v.mid).join(' ');
+    const matchQ   = !q ||
+      item.nama.toLowerCase().includes(q) ||
+      item.kategori.toLowerCase().includes(q) ||
+      allMids.toLowerCase().includes(q) ||
+      (item.lifetime || '').toLowerCase().includes(q) ||
+      item.sizes.join(' ').toLowerCase().includes(q) ||
+      item.types.join(' ').toLowerCase().includes(q);
+    return matchKat && matchQ;
+  });
+
+  rows = [...rows].sort((a, b) => {
+    const va = (a[catalogSort.key] || '').toString().toLowerCase();
+    const vb = (b[catalogSort.key] || '').toString().toLowerCase();
+    return va < vb ? -catalogSort.dir : va > vb ? catalogSort.dir : 0;
+  });
+  _catalogRows = rows;
+
+  const statsBar = document.getElementById('catalogStats');
+  if (q) {
+    // Only show the bar if the user is actually searching
+    statsBar.innerHTML = `<span>Hasil pencarian: <b style="color:var(--text)">"${q}"</b></span>`;
+    statsBar.style.display = 'flex';
+  } else {
+    // Hide the bar entirely when browsing normally to keep it clean
+    statsBar.style.display = 'none';
+  }
+
+  if (!rows.length) {
+    document.getElementById('catalogTbody').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--text-muted);">🔎 Tidak ada APD yang cocok.</td></tr>`;
+    return;
+  }
+
+  document.getElementById('catalogTbody').innerHTML = rows.map((item, idx) => {
+    const imgHtml = item._base64
+      ? `<img src="${item._base64}" alt="${esc(item.nama)}" data-catalog-idx="${idx}" class="catalog-img-click">`
+      : `<div class="tbl-img-ph catalog-img-click" data-catalog-idx="${idx}">🛡️</div>`;
+
+    const sizeHtml = item.sizes.length
+      ? `<div class="tag-pills">${item.sizes.map(s => `<span class="tag-pill">${s}</span>`).join('')}</div>`
+      : `<span class="tag-pill none">—</span>`;
+
+    const typeHtml = item.types.length
+      ? `<div class="tag-pills">${item.types.map(t => `<span class="tag-pill">${t}</span>`).join('')}</div>`
+      : `<span class="tag-pill none">—</span>`;
+
+    let midHtml;
+    const firstMid = item.variants[0]?.mid || '';
+    const multiMid = item.variants.length > 1;
+    if (!firstMid) {
+      midHtml = `<span class="mid-empty">—</span>`;
+    } else if (!multiMid) {
+      midHtml = `<div class="tbl-mid-wrap">
+        <span class="tbl-mid-val">${firstMid}</span>
+        <button class="tbl-copy-btn" onclick="copyToClipboard('${firstMid}',this)" title="Salin MID">${SVG_COPY}</button>
+      </div>`;
+    } else {
+      midHtml = `<span style="font-size:0.72rem;color:var(--text-muted);font-style:italic;">Klik Disini</span>`;
+    }
+
+    const lifeHtml = item.lifetime
+      ? `<div class="tbl-life-wrap"><div class="tbl-info-icon">${SVG_CLOCK}</div><span class="tbl-life-val">${item.lifetime}</span></div>`
+      : `<span class="lifetime-empty">—</span>`;
+
+    return `
+      <tr class="clickable-row" data-catalog-idx="${idx}" style="cursor: pointer;">
+        <td style="text-align:center;font-size:0.75rem;font-weight:600;color:var(--text-muted);">${idx + 1}</td>
+        <td class="td-img">${imgHtml}</td>
+        <td><span class="td-nama-text">${item.nama}</span></td>
+        <td class="td-kat"><span>${item.kategori || '—'}</span></td>
+        <td>${sizeHtml}</td>
+        <td>${typeHtml}</td>
+        <td class="td-mid">${midHtml}</td>
+        <td>${lifeHtml}</td>
+      </tr>`;
+  }).join('');
+
+  rows.forEach((item, idx) => {
+    if (!item._base64 && item.link && !_fetchingUrls.has(item.link)) {
+      _fetchingUrls.add(item.link);
+      google.script.run
+        .withSuccessHandler(function(b64) {
+          _fetchingUrls.delete(item.link);
+          if (!b64 || !b64.startsWith('data:image/')) return;
+          item._base64 = b64;
+          imageCache[item.link] = b64;
+          const el = document.querySelector(`.catalog-img-click[data-catalog-idx="${idx}"]`);
+          if (!el) return;
+          if (el.tagName === 'IMG') { el.src = b64; }
+          else {
+            const img = document.createElement('img');
+            img.src = b64; img.dataset.catalogIdx = idx; img.classList.add('catalog-img-click');
+            el.replaceWith(img);
+          }
+        })
+        .withFailureHandler(function() { _fetchingUrls.delete(item.link); })
+        .getImageCached(item.link);
+    }
+  });
+}
+
+document.getElementById('apdTable').addEventListener('click', function(e) {
+  // 1. IMPORTANT: If the user clicked the Copy button, 
+  // stop here so the modal doesn't pop up.
+  if (e.target.closest('.tbl-copy-btn')) return;
+
+  // 2. Look for the closest row instead of just the image
+  const row = e.target.closest('.clickable-row');
+  if (!row) return;
+
+  // 3. Get the index from the row dataset
+  const idx = parseInt(row.dataset.catalogIdx);
+  const item = _catalogRows[idx];
+  if (!item) return;
+
+  // 4. Prepare data for the modal (Your existing logic)
+  const apdData = {
+    nama:        item.nama,
+    kategori:    item.kategori,
+    lifetime:    item.lifetime,
+    variantType: item.variantType,
+    variants:    item.variants,
+    images:      item.images,
+    link:        item.link,
+    _base64Images: {}
+  };
+
+  if (item.images) {
+    Object.keys(item.images).forEach(typeKey => {
+      const url = item.images[typeKey];
+      if (url && imageCache[url]) apdData._base64Images[typeKey] = imageCache[url];
+    });
+  }
+
+  // 5. Open the modal
+  openModal(item.nama, item.kategori, apdData, item._base64, apdData._base64Images);
+});
+
+function sortCatalog(key) {
+  if (catalogSort.key === key) { catalogSort.dir *= -1; } else { catalogSort.key = key; catalogSort.dir = 1; }
+  document.querySelectorAll('.sort-icon').forEach(el => el.textContent = '↕');
+  const icon = document.getElementById('sort-' + key); if (icon) icon.textContent = catalogSort.dir === 1 ? '↑' : '↓';
+  renderCatalog();
+}
+
+/* ══ COMPARE MODE ══ */
+let compareMode = false, selectedRisks = [], userChoices = {};
+
+function toggleCompareMode() {
+  compareMode = !compareMode; selectedRisks = []; userChoices = {};
+  const fab = document.getElementById('fabCompare');
+  if (compareMode) {
+    fab.innerHTML = `⚖️ Bandingkan <span class="fab-count">0</span>`;
+    fab.classList.add('active-mode');
+    document.querySelectorAll('.risk-card').forEach(card => { card.classList.add('selectable'); card.classList.remove('selected'); const i = card.querySelector('.compare-icon'); if (i) i.textContent = '+'; });
+  } else {
+    fab.innerHTML = `⚖️ Bandingkan Risiko`; fab.classList.remove('active-mode');
+    document.querySelectorAll('.risk-card').forEach(card => { card.classList.remove('selectable', 'selected'); const i = card.querySelector('.compare-icon'); if (i) i.textContent = '+'; });
+  }
+}
+
+function openComparePanel() { buildComparePanel(); document.getElementById('compareOverlay').classList.add('show'); }
+
+function buildComparePanel() {
+  userChoices = {};
+  const selected = rawData.filter(d => selectedRisks.includes(d.id));
+  document.getElementById('compareRiskTags').innerHTML = selected.map(item => `<span class="selected-risk-tag">⚠️ ${item.resiko}</span>`).join('');
+
+  const catMap = {};
+
+  selected.forEach(item => {
+    const itemCatGroups = {};
+    item.apd.forEach(a => {
+      const k = a.kategori || 'Lainnya';
+      if (!itemCatGroups[k]) itemCatGroups[k] = [];
+      itemCatGroups[k].push(a);
+    });
+    Object.entries(itemCatGroups).forEach(([kat, apdList]) => {
+      if (!catMap[kat]) catMap[kat] = [];
+      catMap[kat].push({ riskId: item.id, riskName: item.resiko, items: apdList });
+    });
+  });
+
+  let html = '';
+  for (const [kat, bundles] of Object.entries(catMap)) {
+    // Normalize: trim + lowercase for reliable comparison
+    const bundleSignature = b => b.items.map(a => a.nama.trim().toLowerCase()).sort().join('|');
+    const uniqueSignatures = [...new Set(bundles.map(bundleSignature))];
+    const allSame = uniqueSignatures.length === 1;
+
+    if (allSame) {
+      const bundle = bundles[0];
+      userChoices[kat] = bundle.riskId;
+      const previewImg = bundle.items[0]?._base64 || '';
+
+      html += `<div class="compare-category">
+        <div class="compare-cat-header">🛡️ ${kat}
+          <span class="cat-count">${bundles.length} risiko membutuhkan</span>
+        </div>
+        <div class="compare-single">
+          ${previewImg ? `<img class="opt-img" src="${previewImg}" alt="">` : `<div class="opt-img-ph">🛡️</div>`}
+          <div>
+            <div class="single-name">${bundle.items.map(a => a.nama).join(' + ')}</div>
+            <div class="single-risks">${bundles.length} risiko · APD sama</div>
+          </div>
+        </div>
+      </div>`;
+
+    } else {
+      // Deduplicate using same normalized signature
+      const seenSigs = new Set();
+      const uniqueBundles = bundles.filter(b => {
+        const sig = bundleSignature(b);
+        if (seenSigs.has(sig)) return false;
+        seenSigs.add(sig);
+        return true;
+      });
+      console.log('KAT:', kat, '| bundles:', bundles.map(b => b.items.map(a=>a.nama).join(',')), '| uniqueBundles:', uniqueBundles.map(b => b.items.map(a=>a.nama).join(',')));
+      html += `<div class="compare-category">
+        <div class="compare-cat-header compare-cat-conflict">⚠️ ${kat}
+          <span class="cat-count">${uniqueBundles.length} opsi berbeda</span>
+        </div>
+        <div class="compare-options">
+          ${uniqueBundles.map(bundle => {
+            const previewImg = bundle.items[0]?._base64 || '';
+            return `
+              <div class="compare-option" data-kat="${esc(kat)}" data-riskid="${esc(bundle.riskId)}">
+                <span class="opt-check">✓</span>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
+                  ${bundle.items.slice(0, 4).map(a =>
+                    a._base64
+                      ? `<img class="opt-img" src="${a._base64}" alt="" style="width:40px;height:40px;">`
+                      : `<div class="opt-img-ph" style="width:40px;height:40px;font-size:0.9rem;">🛡️</div>`
+                  ).join('')}
+                </div>
+                <div class="opt-risk">${bundle.riskName}</div>
+                <div class="opt-name">${bundle.items.map(a => a.nama).join(', ')}</div>
+              </div>`;
+          }).join('')}
+        </div>
+        <div class="consult-note">💬 Silahkan hubungi tim IMS untuk diskusi lebih lanjut</div>
+      </div>`;
+    }
+  }
+  document.getElementById('compareCategoryBlocks').innerHTML = html;
+  buildCompareSummary();
+}
+
+document.getElementById('comparePanel').addEventListener('click', function(e) {
+  const opt = e.target.closest('.compare-option');
+  if (opt) {
+    opt.closest('.compare-options').querySelectorAll('.compare-option').forEach(o => o.classList.remove('user-selected'));
+    opt.classList.add('user-selected');
+    userChoices[opt.dataset.kat] = opt.dataset.riskid;
+    buildCompareSummary();
+  }
+});
+
+document.getElementById('compareSummary').addEventListener('click', function(e) {
+  const chip = e.target.closest('.summary-chip');
+  if (!chip) return;
+  const nama   = chip.dataset.nama;
+  const kat    = chip.dataset.kat;
+  const itemId = chip.dataset.itemid;
+  
+  const item = rawData.find(d => d.id === itemId);
+  if (!item) return;
+  const apd = item.apd.find(a => a.kategori === kat && a.nama === nama);
+  if (!apd) return;
+
+  const allTypeBase64 = (apd.apdData?._base64Images) ? { ...apd.apdData._base64Images } : {};
+  if (!allTypeBase64[''] && apd._base64) allTypeBase64[''] = apd._base64;
+  openModal(nama, kat, apd.apdData, apd._base64, allTypeBase64);
+});
+
+function buildCompareSummary() {
+  const cats = Object.keys(userChoices).filter(k => userChoices[k]);
+  if (!cats.length) {
+    document.getElementById('compareSummary').innerHTML = '<span style="font-size:0.72rem;color:var(--text-muted)">Pilih spesifikasi di atas untuk melihat ringkasan</span>';
+    return;
+  }
+  const selected = rawData.filter(d => selectedRisks.includes(d.id));
+  let html = `<div style="width:100%;margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);">
+    <div style="font-size:0.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.4rem;">⚠️ Risiko yang Dibandingkan</div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.35rem;">${selected.map(item => `<span style="background:var(--red-subtle);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:2rem;padding:3px 10px;font-size:0.7rem;font-weight:600;">${item.resiko}</span>`).join('')}</div>
+  </div>`;
+  cats.forEach(kat => {
+    const chosenRiskId = userChoices[kat];
+    const chosenRisk   = rawData.find(d => d.id === chosenRiskId);
+    if (!chosenRisk) return;
+
+    const apdInCat = chosenRisk.apd.filter(a => (a.kategori || 'Lainnya') === kat);
+
+    apdInCat.forEach(apd => {
+      html += `<div class="summary-chip" data-kat="${esc(kat)}" data-itemid="${esc(chosenRiskId)}" data-nama="${esc(apd.nama)}">
+        ${apd._base64
+          ? `<img src="${apd._base64}" alt="">`
+          : `<div class="chip-img-ph">🛡️</div>`}
+        <div class="chip-info">
+          <span class="chip-cat">${kat}</span>
+          <span class="chip-name">${apd.nama}</span>
+        </div>
+      </div>`;
+    });
+  });
+  document.getElementById('compareSummary').innerHTML = html;
+}
+
+function closeComparePanel(e) { if (!e || e.target.id === 'compareOverlay') document.getElementById('compareOverlay').classList.remove('show'); }
+function addMoreRisk() { document.getElementById('compareOverlay').classList.remove('show'); }
+function exitCompare() {
+  compareMode = false; selectedRisks = []; userChoices = {};
+  document.getElementById('compareOverlay').classList.remove('show');
+  document.getElementById('fabCompare').innerHTML = '⚖️ Bandingkan Risiko';
+  document.getElementById('fabCompare').classList.remove('active-mode');
+  document.querySelectorAll('.risk-card').forEach(card => { card.classList.remove('selectable', 'selected'); const i = card.querySelector('.compare-icon'); if (i) i.textContent = '+'; });
+}
+
+/* ══ VIEW TOGGLE ══ */
+function toggleView() {
+  currentView = currentView === 'gallery' ? 'list' : 'gallery';
+  const icon = document.getElementById('viewIcon'), label = document.getElementById('viewLabel');
+  if (currentView === 'list') { document.getElementById('content').classList.add('list-view'); icon.textContent = '⊞'; label.textContent = 'Gallery'; }
+  else { document.getElementById('content').classList.remove('list-view'); icon.textContent = '☰'; label.textContent = 'List'; }
+  renderAll();
+  if (compareMode) {
+    document.querySelectorAll('.risk-card').forEach(card => {
+      card.classList.add('selectable');
+      const icon = card.querySelector('.compare-icon');
+      if (selectedRisks.includes(card.dataset.itemid)) { card.classList.add('selected'); if (icon) icon.textContent = '✓'; }
+      else { card.classList.remove('selected'); if (icon) icon.textContent = '+'; }
+    });
+  }
+}
+
+/* ══ CLOSE DROPDOWNS ON OUTSIDE CLICK ══ */
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('sectionSelected').contains(e.target) && !document.getElementById('sectionDropdown').contains(e.target)) {
+    document.getElementById('sectionSelected').classList.remove('open');
+    document.getElementById('sectionDropdown').classList.remove('open');
+  }
+  const katSel = document.getElementById('katSelected'), katDrop = document.getElementById('katDropdown');
+  if (katSel && katDrop && !katSel.contains(e.target) && !katDrop.contains(e.target)) {
+    katSel.classList.remove('open'); katDrop.classList.remove('open');
+  }
+});
+
+/* ══ UTILS ══ */
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/'/g, '&#39;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ══ FEEDBACK ══ */
+let _fbJenis = 'Bug 🐛';
+
+function openFeedback() {
+  document.getElementById('fbForm').style.display    = 'block';
+  document.getElementById('fbSuccess').classList.remove('show');
+  document.getElementById('fbDeskripsi').value = '';
+  document.getElementById('fbNama').value      = '';
+  document.getElementById('fbDeskripsi').disabled = false;
+  document.getElementById('fbNama').disabled      = false;
+  document.getElementById('fbDeskripsi').style.borderColor = '';
+  document.getElementById('fbNama').style.borderColor      = '';
+  document.getElementById('fbPhotoWrap').style.pointerEvents = '';
+  document.getElementById('fbPhotoWrap').style.opacity = '';
+  document.querySelectorAll('.fb-jenis-btn').forEach(b => {
+    b.classList.remove('active');
+    b.style.pointerEvents = '';
+    b.style.opacity = '';
+  });
+  document.querySelector('.fb-jenis-btn[data-jenis="Bug 🐛"]').classList.add('active');
+  _fbJenis = 'Bug 🐛';
+
+  _fbPhotosBase64 = [];
+  document.getElementById('fbPhotoInput').value = '';
+  document.getElementById('fbPhotoPreview').className = 'fb-photo-placeholder';
+  document.getElementById('fbPhotoPreview').innerHTML = `
+    <span style="font-size:1.5rem;">📷</span>
+    <span style="font-size:0.75rem;color:var(--text-muted);">Klik untuk upload foto (bisa lebih dari 1)</span>
+  `;
+
+  const btn = document.getElementById('fbSubmitBtn');
+  btn.disabled    = false;
+  btn.textContent = 'Kirim Feedback 🚀';
+  document.getElementById('fbOverlay').classList.add('show');
+}
+
+let _fbPhotosBase64 = []; // array now, not single string
+
+function onPhotoSelected(event) {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+
+  // Check each file size
+  for (const file of files) {
+    if (file.size > 5 * 1024 * 1024) {
+      alert(`Ukuran foto "${file.name}" melebihi 5MB.`);
+      return;
+    }
+  }
+
+  const readers = files.map(file => new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  }));
+
+  Promise.all(readers).then(results => {
+    _fbPhotosBase64 = [..._fbPhotosBase64, ...results];
+    renderPhotoPreview();
+  });
+}
+
+function removePhoto(idx) {
+  _fbPhotosBase64.splice(idx, 1);
+  renderPhotoPreview();
+}
+
+function renderPhotoPreview() {
+  const wrap = document.getElementById('fbPhotoPreview');
+  if (!_fbPhotosBase64.length) {
+    wrap.className = 'fb-photo-placeholder';
+    wrap.innerHTML = `
+      <span style="font-size:1.5rem;">📷</span>
+      <span style="font-size:0.75rem;color:var(--text-muted);">Klik untuk upload foto (bisa lebih dari 1)</span>
+    `;
+    return;
+  }
+  wrap.className = '';
+  wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.5rem;padding:0.75rem;align-items:flex-start;';
+  wrap.innerHTML = _fbPhotosBase64.map((src, idx) => `
+    <div style="position:relative;flex-shrink:0;">
+      <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:0.5rem;display:block;">
+      <button class="fb-photo-remove" onclick="event.stopPropagation();removePhoto(${idx})" style="top:4px;right:4px;">✕</button>
+    </div>
+  `).join('') + `
+    <div onclick="event.stopPropagation();document.getElementById('fbPhotoInput').click()"
+         style="width:80px;height:80px;border:1.5px dashed var(--border);border-radius:0.5rem;
+                display:flex;flex-direction:column;align-items:center;justify-content:center;
+                cursor:pointer;color:var(--text-muted);font-size:1.2rem;flex-shrink:0;gap:4px;">
+      ➕
+      <span style="font-size:0.6rem;">Tambah</span>
+    </div>
+  `;
+}
+
+function closeFeedback() {
+  document.getElementById('fbOverlay').classList.remove('show');
+}
+
+function closeFeedbackOutside(e) {
+  if (e.target.id === 'fbOverlay') closeFeedback();
+}
+
+function selectJenis(el) {
+  document.querySelectorAll('.fb-jenis-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  _fbJenis = el.dataset.jenis;
+}
+
+function shakeField(id) {
+  const el = document.getElementById(id);
+  el.style.borderColor = 'var(--red)';
+  el.style.boxShadow   = '0 0 0 3px var(--red-glow)';
+  el.focus();
+  setTimeout(() => {
+    el.style.borderColor = '';
+    el.style.boxShadow   = '';
+  }, 1800);
+}
+
+function disableAllFields() {
+  document.getElementById('fbDeskripsi').disabled = true;
+  document.getElementById('fbNama').disabled      = true;
+  document.getElementById('fbPhotoWrap').style.pointerEvents = 'none'; // ← add this
+  document.getElementById('fbPhotoWrap').style.opacity = '0.5';        // ← add this
+  document.querySelectorAll('.fb-jenis-btn').forEach(b => {
+    b.style.pointerEvents = 'none';
+    b.style.opacity = '0.5';
+  });
+  const btn = document.getElementById('fbSubmitBtn');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Mengirim...';
+}
+
+function submitFeedbackForm() {
+  const deskripsi = document.getElementById('fbDeskripsi').value.trim();
+  const nama      = document.getElementById('fbNama').value.trim();
+
+  // Validate both required fields
+  if (!deskripsi && !nama) {
+    shakeField('fbDeskripsi');
+    setTimeout(() => shakeField('fbNama'), 150);
+    return;
+  }
+  if (!deskripsi) { shakeField('fbDeskripsi'); return; }
+  if (!nama)      { shakeField('fbNama');      return; }
+
+  // Lock all fields immediately
+  disableAllFields();
+
+  const activeTab = document.getElementById('tab-matriks').classList.contains('active')
+    ? 'Matriks Risiko' : 'Katalog APD';
+
+  const payload = {
+    jenis:     _fbJenis,
+    nama:      nama,
+    deskripsi: deskripsi,
+    tab:       activeTab,
+    browser:   navigator.userAgent,
+    foto:      _fbPhotosBase64  // now an array
+  };
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      const btn = document.getElementById('fbSubmitBtn');
+      if (res && res.success) {
+        btn.textContent = '✅ Terkirim!';
+        setTimeout(() => {
+          document.getElementById('fbForm').style.display = 'none';
+          document.getElementById('fbSuccess').classList.add('show');
+        }, 800);
+      } else {
+        btn.disabled    = false;
+        btn.textContent = '❌ Gagal — Coba Lagi';
+        document.getElementById('fbDeskripsi').disabled = false;
+        document.getElementById('fbNama').disabled      = false;
+        document.getElementById('fbPhotoWrap').style.pointerEvents = '';
+        document.getElementById('fbPhotoWrap').style.opacity = '';
+        document.querySelectorAll('.fb-jenis-btn').forEach(b => {
+          b.style.pointerEvents = '';
+          b.style.opacity = '';
+        });
+        setTimeout(() => { btn.textContent = 'Kirim Feedback 🚀'; }, 2500);
+      }
+    })
+    .withFailureHandler(function() {
+      const btn = document.getElementById('fbSubmitBtn');
+      btn.disabled    = false;
+      btn.textContent = '❌ Gagal — Coba Lagi';
+      document.getElementById('fbDeskripsi').disabled = false;
+      document.getElementById('fbNama').disabled      = false;
+      document.getElementById('fbPhotoWrap').style.pointerEvents = '';
+      document.getElementById('fbPhotoWrap').style.opacity = '';
+      document.querySelectorAll('.fb-jenis-btn').forEach(b => {
+        b.style.pointerEvents = '';
+        b.style.opacity = '';
+      });
+      setTimeout(() => { btn.textContent = 'Kirim Feedback 🚀'; }, 2500);
+    })
+    .submitFeedback(payload);
+}
+
+</script>
+</body>
+</html>
